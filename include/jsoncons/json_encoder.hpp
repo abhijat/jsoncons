@@ -216,21 +216,21 @@ namespace detail {
         }
 
         static const std::array<CharT,1> colon;
-        static const std::array<CharT,2> colon_space; 
-        static const std::array<CharT,2> space_colon; 
-        static const std::array<CharT,3> space_colon_space; 
+        static const std::array<CharT,2> colon_space;
+        static const std::array<CharT,2> space_colon;
+        static const std::array<CharT,3> space_colon_space;
         static const std::array<CharT,1> comma;
-        static const std::array<CharT,2> comma_space; 
-        static const std::array<CharT,2> space_comma; 
-        static const std::array<CharT,3> space_comma_space; 
-        static const std::array<CharT,1> left_brace; 
-        static const std::array<CharT,1> right_brace; 
+        static const std::array<CharT,2> comma_space;
+        static const std::array<CharT,2> space_comma;
+        static const std::array<CharT,3> space_comma_space;
+        static const std::array<CharT,1> left_brace;
+        static const std::array<CharT,1> right_brace;
         static const std::array<CharT,2> left_brace_space;
-        static const std::array<CharT,2> space_right_brace; 
-        static const std::array<CharT,1> left_bracket; 
-        static const std::array<CharT,1> right_bracket; 
+        static const std::array<CharT,2> space_right_brace;
+        static const std::array<CharT,1> left_bracket;
+        static const std::array<CharT,1> right_bracket;
         static const std::array<CharT,2> left_bracket_space;
-        static const std::array<CharT,2> space_right_bracket; 
+        static const std::array<CharT,2> space_right_bracket;
     public:
         using allocator_type = Allocator;
         using char_type = CharT;
@@ -259,9 +259,9 @@ namespace detail {
             }
 
             encoding_context(const encoding_context&) = default;
-            
+
             ~encoding_context() = default;
-            
+
             encoding_context& operator=(const encoding_context&) = default;
 
             void set_position(std::size_t pos)
@@ -467,7 +467,7 @@ namespace detail {
             {
                 if (stack_.back().is_object())
                 {
-                    line_split_kind split_kind = static_cast<uint8_t>(options_.object_object_line_splits()) >= static_cast<uint8_t>(stack_.back().split_kind()) ? 
+                    line_split_kind split_kind = static_cast<uint8_t>(options_.object_object_line_splits()) >= static_cast<uint8_t>(stack_.back().split_kind()) ?
                         options_.object_object_line_splits() : stack_.back().split_kind();
                     switch (split_kind)
                     {
@@ -486,7 +486,7 @@ namespace detail {
                 }
                 else // array
                 {
-                    line_split_kind split_kind = static_cast<uint8_t>(options_.array_object_line_splits()) >= static_cast<uint8_t>(stack_.back().split_kind()) ? 
+                    line_split_kind split_kind = static_cast<uint8_t>(options_.array_object_line_splits()) >= static_cast<uint8_t>(stack_.back().split_kind()) ?
                         options_.array_object_line_splits() : stack_.back().split_kind();
                     switch (split_kind)
                     {
@@ -561,8 +561,8 @@ namespace detail {
             {
                 if (stack_.back().is_object())
                 {
-                    line_split_kind split_kind = static_cast<uint8_t>(options_.object_array_line_splits()) >= static_cast<uint8_t>(stack_.back().split_kind()) ? 
-                        options_.object_array_line_splits() : 
+                    line_split_kind split_kind = static_cast<uint8_t>(options_.object_array_line_splits()) >= static_cast<uint8_t>(stack_.back().split_kind()) ?
+                        options_.object_array_line_splits() :
                         stack_.back().split_kind();
                     switch (split_kind)
                     {
@@ -584,7 +584,7 @@ namespace detail {
                 }
                 else // array
                 {
-                    line_split_kind split_kind = static_cast<uint8_t>(options_.array_array_line_splits()) >= static_cast<uint8_t>(stack_.back().split_kind()) ? 
+                    line_split_kind split_kind = static_cast<uint8_t>(options_.array_array_line_splits()) >= static_cast<uint8_t>(stack_.back().split_kind()) ?
                         options_.array_array_line_splits() : stack_.back().split_kind();
                     switch (split_kind)
                     {
@@ -668,7 +668,10 @@ namespace detail {
             std::size_t length = jsoncons::detail::escape_string(name.data(), name.length(),options_.escape_all_non_ascii(),options_.escape_solidus(),sink_);
             sink_.push_back('\"');
             sink_.append(colon_str_.data(),colon_str_.length());
-            column_ += (length+2+colon_str_.length());
+
+            const auto after_key = options_.after_key_chars();
+            sink_.append(after_key.data(),after_key.length());
+            column_ += length + 2 + colon_str_.length() + after_key.length();
             JSONCONS_VISITOR_RETURN;
         }
 
@@ -713,7 +716,7 @@ namespace detail {
             JSONCONS_VISITOR_RETURN;
         }
 
-        void write_string(const string_view_type& sv, semantic_tag tag, const ser_context&, std::error_code&) 
+        void write_string(const string_view_type& sv, semantic_tag tag, const ser_context&, std::error_code&)
         {
             if (JSONCONS_LIKELY(tag == semantic_tag::noesc && !options_.escape_all_non_ascii() && !options_.escape_solidus()))
             {
@@ -744,10 +747,10 @@ namespace detail {
                 std::size_t length = jsoncons::detail::escape_string(sv.data(), sv.length(),options_.escape_all_non_ascii(),options_.escape_solidus(),sink_);
                 sink_.push_back('\"');
                 column_ += (length+2);
-            }           
+            }
         }
 
-        JSONCONS_VISITOR_RETURN_TYPE visit_byte_string(const byte_string_view& b, 
+        JSONCONS_VISITOR_RETURN_TYPE visit_byte_string(const byte_string_view& b,
                                   semantic_tag tag,
                                   const ser_context&,
                                   std::error_code&) final
@@ -820,7 +823,7 @@ namespace detail {
             JSONCONS_VISITOR_RETURN;
         }
 
-        JSONCONS_VISITOR_RETURN_TYPE visit_double(double value, 
+        JSONCONS_VISITOR_RETURN_TYPE visit_double(double value,
                              semantic_tag,
                              const ser_context& context,
                              std::error_code& ec) final
@@ -901,7 +904,7 @@ namespace detail {
             JSONCONS_VISITOR_RETURN;
         }
 
-        JSONCONS_VISITOR_RETURN_TYPE visit_int64(int64_t value, 
+        JSONCONS_VISITOR_RETURN_TYPE visit_int64(int64_t value,
                             semantic_tag,
                             const ser_context&,
                             std::error_code&) final
@@ -923,7 +926,7 @@ namespace detail {
             JSONCONS_VISITOR_RETURN;
         }
 
-        JSONCONS_VISITOR_RETURN_TYPE visit_uint64(uint64_t value, 
+        JSONCONS_VISITOR_RETURN_TYPE visit_uint64(uint64_t value,
                              semantic_tag, 
                              const ser_context&,
                              std::error_code&) final
@@ -1081,9 +1084,16 @@ namespace detail {
             sink_.append(options_.new_line_chars().data(),options_.new_line_chars().length());
             for (int i = 0; i < indent_amount_; ++i)
             {
-                sink_.push_back(indent_char_);
+                if (options_.indent_chars().empty())
+                {
+                    sink_.push_back(indent_char_);
+                }
+                else
+                {
+                    sink_.append(options_.indent_chars().data(), options_.indent_chars().length());
+                }
             }
-            column_ = indent_amount_;
+            column_ = indent_amount_ * options_.new_line_chars().length();
         }
 
         void new_line(std::size_t len)
@@ -1091,7 +1101,14 @@ namespace detail {
             sink_.append(options_.new_line_chars().data(),options_.new_line_chars().length());
             for (std::size_t i = 0; i < len; ++i)
             {
-                sink_.push_back(' ');
+                if (options_.indent_chars().empty())
+                {
+                    sink_.push_back(indent_char_);
+                }
+                else
+                {
+                    sink_.append(options_.indent_chars().data(), options_.indent_chars().length());
+                }
             }
             column_ = len;
         }
@@ -1205,7 +1222,7 @@ namespace detail {
         basic_compact_json_encoder(const basic_compact_json_encoder&) = delete;
         basic_compact_json_encoder(basic_compact_json_encoder&&) = delete;
 
-        basic_compact_json_encoder(Sink&& sink, 
+        basic_compact_json_encoder(Sink&& sink,
             const Allocator& alloc = Allocator())
             : basic_compact_json_encoder(std::forward<Sink>(sink), basic_json_encode_options<CharT>(), alloc)
         {
@@ -1425,7 +1442,7 @@ namespace detail {
             JSONCONS_VISITOR_RETURN;
         }
 
-        void write_string(const string_view_type& sv, semantic_tag tag, const ser_context&, std::error_code&) 
+        void write_string(const string_view_type& sv, semantic_tag tag, const ser_context&, std::error_code&)
         {
             if (JSONCONS_LIKELY(tag == semantic_tag::noesc && !options_.escape_all_non_ascii() && !options_.escape_solidus()))
             {
@@ -1454,10 +1471,10 @@ namespace detail {
                 sink_.push_back('\"');
                 jsoncons::detail::escape_string(sv.data(), sv.length(),options_.escape_all_non_ascii(),options_.escape_solidus(),sink_);
                 sink_.push_back('\"');
-            }           
+            }
         }
 
-        JSONCONS_VISITOR_RETURN_TYPE visit_byte_string(const byte_string_view& b, 
+        JSONCONS_VISITOR_RETURN_TYPE visit_byte_string(const byte_string_view& b,
             semantic_tag tag,
             const ser_context&,
             std::error_code&) final
@@ -1523,7 +1540,7 @@ namespace detail {
             JSONCONS_VISITOR_RETURN;
         }
 
-        JSONCONS_VISITOR_RETURN_TYPE visit_double(double value, 
+        JSONCONS_VISITOR_RETURN_TYPE visit_double(double value,
                              semantic_tag,
                              const ser_context& context,
                              std::error_code& ec) final
@@ -1593,7 +1610,7 @@ namespace detail {
             JSONCONS_VISITOR_RETURN;
         }
 
-        JSONCONS_VISITOR_RETURN_TYPE visit_int64(int64_t value, 
+        JSONCONS_VISITOR_RETURN_TYPE visit_int64(int64_t value,
                             semantic_tag,
                             const ser_context&,
                             std::error_code&) final
@@ -1610,7 +1627,7 @@ namespace detail {
             JSONCONS_VISITOR_RETURN;
         }
 
-        JSONCONS_VISITOR_RETURN_TYPE visit_uint64(uint64_t value, 
+        JSONCONS_VISITOR_RETURN_TYPE visit_uint64(uint64_t value,
                              semantic_tag, 
                              const ser_context&,
                              std::error_code&) final

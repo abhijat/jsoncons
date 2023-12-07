@@ -25,12 +25,12 @@ enum class indenting : uint8_t {no_indent = 0, indent = 1};
 
 enum class line_split_kind  : uint8_t {multi_line=0, new_line=1, same_line=2};
 
-enum class bignum_format_kind : uint8_t {raw, 
+enum class bignum_format_kind : uint8_t {raw,
 #if !defined(JSONCONS_NO_DEPRECATED)
-    number=raw, // deprecated, use raw instead 
-#endif    
-    base10, 
-    base64, 
+    number=raw, // deprecated, use raw instead
+#endif
+    base10,
+    base64,
     base64url};
 
 #if !defined(JSONCONS_NO_DEPRECATED)
@@ -270,11 +270,11 @@ public:
     basic_json_decode_options(const basic_json_decode_options&) = default;
 
     basic_json_decode_options(basic_json_decode_options&& other) noexcept
-        : super_type(std::move(other)), 
-          lossless_number_(other.lossless_number_), 
-          lossless_bignum_(other.lossless_bignum_), 
-          allow_comments_(other.allow_comments_), 
-          allow_trailing_comma_(other.allow_trailing_comma_), 
+        : super_type(std::move(other)),
+          lossless_number_(other.lossless_number_),
+          lossless_bignum_(other.lossless_bignum_),
+          allow_comments_(other.allow_comments_),
+          allow_trailing_comma_(other.allow_trailing_comma_),
           err_handler_(std::move(other.err_handler_))
     {
     }
@@ -286,23 +286,23 @@ public:
     {
         return lossless_number_;
     }
-    bool lossless_bignum() const 
+    bool lossless_bignum() const
     {
         return lossless_bignum_;
     }
 
-    bool allow_comments() const 
+    bool allow_comments() const
     {
         return allow_comments_;
     }
 
-    bool allow_trailing_comma() const 
+    bool allow_trailing_comma() const
     {
         return allow_trailing_comma_;
     }
 
 #if !defined(JSONCONS_NO_DEPRECATED)
-    const std::function<bool(json_errc,const ser_context&)>& err_handler() const 
+    const std::function<bool(json_errc,const ser_context&)>& err_handler() const
     {
         return err_handler_;
     }
@@ -340,6 +340,8 @@ private:
     std::size_t line_length_limit_{line_length_limit_default};
     string_type new_line_chars_;
     char_type indent_char_;
+    string_type after_key_chars_;
+    string_type indent_chars_;
 public:
     basic_json_encode_options()
         : escape_all_non_ascii_(false),
@@ -383,10 +385,12 @@ public:
           indent_size_(other.indent_size_),
           line_length_limit_(other.line_length_limit_),
           new_line_chars_(std::move(other.new_line_chars_)),
-          indent_char_(other.indent_char_)
+          indent_char_(other.indent_char_),
+          after_key_chars_(std::move(other.after_key_chars_)),
+          indent_chars_(std::move(other.indent_chars_))
     {
     }
-    
+
     ~basic_json_encode_options() = default;
 protected:
     basic_json_encode_options& operator=(const basic_json_encode_options&) = default;
@@ -397,13 +401,13 @@ public:
 #if !defined(JSONCONS_NO_DEPRECATED)
     JSONCONS_DEPRECATED_MSG("Instead, use bignum_format")
     bignum_format_kind bigint_format() const  {return bignum_format_;}
-#endif    
+#endif
 
     bignum_format_kind bignum_format() const  {return bignum_format_;}
 
 #if !defined(JSONCONS_NO_DEPRECATED)
     line_split_kind line_splits() const  {return root_line_splits_;}
-#endif    
+#endif
 
     line_split_kind root_line_splits() const  {return root_line_splits_;}
 
@@ -430,12 +434,12 @@ public:
         return spaces_around_comma_;
     }
 
-    char_type indent_char() const 
+    char_type indent_char() const
     {
         return indent_char_;
     }
 
-    bool pad_inside_object_braces() const 
+    bool pad_inside_object_braces() const
     {
         return pad_inside_object_braces_;
     }
@@ -450,7 +454,17 @@ public:
         return new_line_chars_;
     }
 
-    std::size_t line_length_limit() const 
+    string_type after_key_chars() const
+    {
+        return after_key_chars_;
+    }
+
+    string_type indent_chars() const
+    {
+        return indent_chars_;
+    }
+
+    std::size_t line_length_limit() const
     {
         return line_length_limit_;
     }
@@ -519,6 +533,8 @@ public:
     using basic_json_encode_options<CharT>::pad_inside_object_braces;
     using basic_json_encode_options<CharT>::pad_inside_array_brackets;
     using basic_json_encode_options<CharT>::new_line_chars;
+    using basic_json_encode_options<CharT>::after_key_chars;
+    using basic_json_encode_options<CharT>::indent_chars;
     using basic_json_encode_options<CharT>::line_length_limit;
     using basic_json_encode_options<CharT>::float_format;
     using basic_json_encode_options<CharT>::precision;
@@ -591,13 +607,13 @@ public:
 #if !defined(JSONCONS_NO_DEPRECATED)
     JSONCONS_DEPRECATED_MSG("Instead, use bignum_format")
     basic_json_options& bigint_format(bignum_format_kind value) {this->bignum_format_ = value; return *this;}
-#endif    
+#endif
 
     basic_json_options& bignum_format(bignum_format_kind value) {this->bignum_format_ = value; return *this;}
 
 #if !defined(JSONCONS_NO_DEPRECATED)
     basic_json_options& line_splits(line_split_kind value) {this->root_line_splits_ = value; return *this;}
-#endif    
+#endif
 
     basic_json_options& root_line_splits(line_split_kind value) {this->root_line_splits_ = value; return *this;}
 
@@ -651,32 +667,44 @@ public:
         return *this;
     }
 
+    basic_json_options& after_key_chars(const string_type& value)
+    {
+        this->after_key_chars_ = value;
+        return *this;
+    }
+
+    basic_json_options& indent_chars(const string_type& value)
+    {
+        this->indent_chars_ = value;
+        return *this;
+    }
+
     basic_json_options& lossless_number(bool value) 
     {
         this->lossless_number_ = value;
         return *this;
     }
 
-    basic_json_options& lossless_bignum(bool value) 
+    basic_json_options& lossless_bignum(bool value)
     {
         this->lossless_bignum_ = value;
         return *this;
     }
 
-    basic_json_options& allow_comments(bool value) 
+    basic_json_options& allow_comments(bool value)
     {
         this->allow_comments_ = value;
         return *this;
     }
 
-    basic_json_options& allow_trailing_comma(bool value) 
+    basic_json_options& allow_trailing_comma(bool value)
     {
         this->allow_trailing_comma_ = value;
         return *this;
     }
 
 #if !defined(JSONCONS_NO_DEPRECATED)
-    basic_json_options& err_handler(const std::function<bool(json_errc,const ser_context&)>& value) 
+    basic_json_options& err_handler(const std::function<bool(json_errc,const ser_context&)>& value)
     {
         this->err_handler_ = value;
         return *this;
